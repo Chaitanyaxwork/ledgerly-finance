@@ -1,0 +1,12 @@
+fastapi>=0.115
+uvicorn>=0.30
+pandas>=2.2
+pydantic>=2.7
+sqlalchemy>=2.0
+alembic>=1.13
+python-dotenv>=1.0
+bcrypt>=4.0
+PyJWT>=2.8
+email-validator>=2.0
+# Only needed if you point DATABASE_URL at PostgreSQL (not for the default SQLite):
+# psycopg2-binary>=2.9

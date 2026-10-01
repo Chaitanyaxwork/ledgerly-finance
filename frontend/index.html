@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledgerly — Credit Ledger</title>
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.js"></script>
+<link rel="stylesheet" href="styles.css?v=3" />
+</head>
+<body class="pre-auth">
+
+<div class="auth-screen" id="authScreen">
+  <form class="auth-card" id="authForm" novalidate>
+    <div class="brand-logo auth-logo" aria-hidden="true">
+      <svg viewBox="0 0 48 48" role="img">
+        <path d="M11 7h21c3.3 0 6 2.7 6 6v21c0 3.9-3.1 7-7 7H11c-3.9 0-7-3.1-7-7V14c0-3.9 3.1-7 7-7Z" fill="currentColor" opacity=".98"/>
+        <path d="M15 15h12.5a5.5 5.5 0 0 1 0 11H20v7h-5V15Zm5 4v3h7.2a1.5 1.5 0 0 0 0-3H20Z" fill="#10110f"/>
+        <path d="M31 13.5 38 20v-7.5a5.5 5.5 0 0 0-5.5-5.5H25l6 6.5Z" fill="#f5d90a" opacity=".9"/>
+      </svg>
+    </div>
+    <h1 class="auth-title">Ledgerly</h1>
+    <p class="auth-sub" id="authSub">Sign in to your ledger.</p>
+
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab is-active" id="tabSignin" data-mode="signin">Sign in</button>
+      <button type="button" class="auth-tab" id="tabSignup" data-mode="signup">Create account</button>
+    </div>
+
+    <div class="field">
+      <label for="auth-email">Email</label>
+      <input id="auth-email" type="email" autocomplete="username" required />
+    </div>
+    <div class="field">
+      <label for="auth-password">Password</label>
+      <input id="auth-password" type="password" autocomplete="current-password" minlength="8" maxlength="72" required />
+      <p class="field-hint" id="authPwHint">At least 8 characters.</p>
+    </div>
+
+    <p class="auth-error hidden" id="authError"></p>
+    <button type="submit" class="btn btn-primary btn-block" id="authSubmit">Sign in</button>
+  </form>
+</div>
+
+<div class="app-shell">
+
+  <header class="topbar">
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <span class="topbar-brand"><span class="topbar-mark">L</span><span class="topbar-title">Ledgerly</span></span>
+    <button class="icon-btn" id="topSearchBtn" aria-label="Search">🔍</button>
+  </header>
+
+  <div class="scrim" id="scrim"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 48 48" role="img">
+          <path d="M11 7h21c3.3 0 6 2.7 6 6v21c0 3.9-3.1 7-7 7H11c-3.9 0-7-3.1-7-7V14c0-3.9 3.1-7 7-7Z" fill="currentColor" opacity=".98"/>
+          <path d="M15 15h12.5a5.5 5.5 0 0 1 0 11H20v7h-5V15Zm5 4v3h7.2a1.5 1.5 0 0 0 0-3H20Z" fill="#10110f"/>
+          <path d="M31 13.5 38 20v-7.5a5.5 5.5 0 0 0-5.5-5.5H25l6 6.5Z" fill="#f5d90a" opacity=".9"/>
+        </svg>
+      </div>
+      <div class="brand-copy"><div class="brand-name">Ledgerly</div><div class="brand-sub">PERSONAL CREDIT LEDGER</div></div>
+    </div>
+
+    <div class="sidebar-search">
+      <span class="search-icon">⌕</span>
+      <input type="search" id="globalSearch" placeholder="Search ledger…" />
+      <kbd>⌘ K</kbd>
+    </div>
+
+    <button class="bell-btn" id="bellBtn" type="button" aria-label="Alerts">
+      <span class="nav-icon">◉</span><span>Alerts</span><span class="bell-badge hidden" id="bellBadge">0</span>
+    </button>
+
+    <div class="nav-label">Workspace</div>
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-view="dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span><span class="nav-arrow">›</span></button>
+      <button class="nav-item" data-view="people"><span class="nav-icon">♙</span><span>People</span><span class="nav-arrow">›</span></button>
+      <button class="nav-item nav-item--accent" data-view="add"><span class="nav-icon nav-plus">+</span><span>New entry</span><span class="nav-arrow">›</span></button>
+      <button class="nav-item" data-view="ledger"><span class="nav-icon">▤</span><span>Ledger</span><span class="nav-arrow">›</span></button>
+      <button class="nav-item" data-view="calculator"><span class="nav-icon">⌁</span><span>Interest</span><span class="nav-arrow">›</span></button>
+    </nav>
+
+    <div class="nav-label nav-label--lower">Insights</div>
+    <nav class="nav nav-secondary">
+      <button class="nav-item" data-view="reports"><span class="nav-icon">◒</span><span>Reports</span><span class="nav-arrow">›</span></button>
+      <button class="nav-item" data-view="records"><span class="nav-icon">☷</span><span>All records</span><span class="nav-arrow">›</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="account-box">
+        <span class="status-dot"></span>
+        <span class="account-email" id="accountEmail">—</span>
+      </div>
+      <button class="btn btn-ghost btn-block" id="signOutBtn">Sign out</button>
+      <button class="btn btn-ghost btn-block sidebar-wipe" id="wipeAllBtn">Erase all data</button>
+      <button class="btn btn-ghost btn-block sidebar-danger" id="deleteAccountBtn">Delete account</button>
+    </div>
+  </aside>
+
+  <!-- Delete-account confirmation -->
+  <div class="modal-backdrop hidden" id="deleteAccountModal">
+    <form class="card modal-card" id="deleteAccountForm">
+      <h2>Delete your account</h2>
+      <p class="field-hint">This permanently deletes your account and every person, transaction and repayment in it. This cannot be undone.</p>
+      <div class="field">
+        <label for="da-password">Confirm your password</label>
+        <input id="da-password" type="password" autocomplete="current-password" required />
+      </div>
+      <p class="auth-error hidden" id="deleteAccountError"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="deleteAccountCancel">Cancel</button>
+        <button type="submit" class="btn btn-danger">Delete my account</button>
+      </div>
+    </form>
+  </div>
+
+  <main class="main">
+
+    <!-- ============ SEARCH RESULTS (overlay-style view) ============ -->
+    <section class="view" id="view-search">
+      <div class="view-head"><h1>Search results</h1><p class="view-sub" id="searchSummary"></p></div>
+      <div id="searchResults"></div>
+    </section>
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view is-active" id="view-dashboard">
+      <div class="dashboard-hero">
+        <div class="dashboard-hero-copy">
+          <span class="eyebrow">OVERVIEW <span class="eyebrow-dot"></span> UPDATED TODAY</span>
+          <h1>Your money,<br /><em>made clear.</em></h1>
+          <p class="view-sub">A calm, visual view of everything you’ve given, taken, and what’s due next.</p>
+        </div>
+        <button class="hero-add" type="button" data-view="add"><span>+</span> New entry</button>
+        <div class="hero-orbit" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+
+      <div class="metric-row" id="metricRow"></div>
+      <p class="empty-state hidden" id="dashboardEmpty">No transactions yet. Start by adding your first entry.</p>
+
+      <div class="card notif-panel hidden" id="notifPanel">
+        <h2>🔔 Alerts</h2>
+        <div id="notifList"></div>
+      </div>
+
+      <div class="panel-row" id="dashboardCharts">
+        <div class="panel">
+          <h2>Outstanding by person</h2>
+          <div class="chart-wrap"><canvas id="chartOutstanding"></canvas></div>
+          <p class="empty-note hidden" id="chartOutstandingEmpty">Nobody has an outstanding balance.</p>
+        </div>
+        <div class="panel">
+          <h2>Money flow</h2>
+          <div class="chart-wrap"><canvas id="chartFlow"></canvas></div>
+        </div>
+      </div>
+      <div class="panel-row">
+        <div class="panel">
+          <h2>Payment status</h2>
+          <div class="chart-wrap chart-wrap--small"><canvas id="chartStatus"></canvas></div>
+        </div>
+        <div class="panel">
+          <h2>Due soon &amp; overdue</h2>
+          <div class="table-wrap"><table><tbody id="dueSoonBody"></tbody></table></div>
+          <p class="empty-note hidden" id="dueSoonEmpty">Nothing due soon. 🎉</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PEOPLE (list) ============ -->
+    <section class="view" id="view-people">
+      <div class="view-head-row">
+        <div><h1>People</h1><p class="view-sub">Everyone you lend to or borrow from.</p></div>
+        <button class="btn btn-primary" id="openAddPersonBtn">+ Add person</button>
+      </div>
+      <div class="people-grid" id="peopleGrid"></div>
+      <div class="empty-state hidden" id="peopleEmpty">
+        <p><strong>No people yet</strong></p>
+        <p>Add your first person to start tracking with Ledgerly.</p>
+        <button class="btn btn-primary" id="emptyAddPersonBtn">+ Add Person</button>
+      </div>
+
+      <!-- Add person mini-form -->
+      <div class="card hidden" id="addPersonCard">
+        <h2>Add a person</h2>
+        <form id="addPersonForm" class="form-grid">
+          <div class="field"><label for="p-name">Name *</label><input id="p-name" required maxlength="200" /></div>
+          <div class="field"><label for="p-phone">Phone</label><input id="p-phone" placeholder="e.g. 91XXXXXXXXXX" /></div>
+          <div class="field field-wide"><label for="p-notes">Notes</label><textarea id="p-notes" rows="2"></textarea></div>
+          <div class="field field-wide" style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">Save person</button>
+            <button type="button" class="btn btn-ghost" id="cancelAddPersonBtn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ PERSON DETAIL ============ -->
+    <section class="view" id="view-person-detail">
+      <div class="view-head-row">
+        <div>
+          <button class="btn btn-ghost btn-sm" id="backToPeopleBtn">← Back to People</button>
+          <h1 id="pdName">—</h1>
+          <p class="view-sub" id="pdPhone"></p>
+        </div>
+        <div class="pd-actions">
+          <button class="btn btn-ghost btn-sm" id="pdWhatsappBtn">📲 WhatsApp</button>
+          <button class="btn btn-ghost btn-sm" id="pdEditBtn">✎ Edit</button>
+          <button class="btn btn-ghost btn-sm" id="pdArchiveBtn">Archive</button>
+        </div>
+      </div>
+
+      <div class="metric-row" id="pdMetricRow"></div>
+
+      <div class="card hidden" id="pdEditCard">
+        <h2>Edit person</h2>
+        <form id="pdEditForm" class="form-grid">
+          <div class="field"><label for="pd-e-name">Name</label><input id="pd-e-name" required maxlength="200" /></div>
+          <div class="field"><label for="pd-e-phone">Phone</label><input id="pd-e-phone" /></div>
+          <div class="field field-wide"><label for="pd-e-notes">Notes</label><textarea id="pd-e-notes" rows="2"></textarea></div>
+          <div class="field field-wide" style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-ghost" id="pdCancelEditBtn">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="view-head" style="margin-top:8px;">
+        <h2>Transaction history</h2>
+      </div>
+      <div id="pdTxnList"></div>
+
+      <div class="card" style="margin-top:20px;">
+        <h2>Add a transaction for this person</h2>
+        <p class="field-hint" id="pdQuickAddHint"></p>
+        <button class="btn btn-primary" id="pdQuickAddBtn">+ Add transaction</button>
+      </div>
+    </section>
+
+    <!-- ============ ADD ENTRY ============ -->
+    <section class="view" id="view-add">
+      <div class="entry-hero">
+        <div>
+          <span class="eyebrow">QUICK ENTRY</span>
+          <h1>Capture a new <em>entry.</em></h1>
+          <p class="view-sub">One clean form. Every important detail. No clutter.</p>
+        </div>
+        <div class="entry-progress" aria-hidden="true">
+          <span class="is-on">01</span><i></i><span>02</span><i></i><span>03</span>
+        </div>
+      </div>
+
+      <form class="entry-shell" id="addForm" novalidate>
+        <div class="entry-main">
+          <div class="entry-section">
+            <div class="section-kicker"><span>01</span><div><strong>Who &amp; how much?</strong><small>Start with the person and the amount.</small></div></div>
+            <div class="entry-fields entry-fields--two">
+              <div class="field field-wide">
+                <label for="f-person">Person <span>*</span></label>
+                <div class="input-shell input-shell--person"><span class="field-leading">◎</span><input id="f-person" list="personList" autocomplete="off" placeholder="Type an existing or new name" required /><datalist id="personList"></datalist></div>
+              </div>
+              <div class="field"><label for="f-phone">Phone <small>optional</small></label><input id="f-phone" placeholder="+91 98xxx xxxxx" /></div>
+              <div class="field"><label for="f-amount">Amount <span>*</span></label><div class="money-input"><span>₹</span><input id="f-amount" type="number" min="0.01" step="0.01" placeholder="0.00" required /></div></div>
+            </div>
+          </div>
+
+          <div class="entry-section">
+            <div class="section-kicker"><span>02</span><div><strong>Set the terms</strong><small>Define direction, timing and interest.</small></div></div>
+            <div class="entry-fields entry-fields--two">
+              <div class="field field-wide">
+                <label>Direction <span>*</span></label>
+                <div class="direction-switch segmented" data-name="txn_type">
+                  <button type="button" class="segmented-opt is-active" data-value="Given"><b>↑</b><span><strong>Given</strong><small>They owe you</small></span></button>
+                  <button type="button" class="segmented-opt" data-value="Taken"><b>↓</b><span><strong>Taken</strong><small>You owe them</small></span></button>
+                </div>
+              </div>
+              <div class="field"><label for="f-date">Transaction date <span>*</span></label><input id="f-date" type="date" required /></div>
+              <div class="field"><label for="f-due">Due date <small>optional</small></label><input id="f-due" type="date" /></div>
+              <div class="field"><label for="f-grace">Grace period</label><div class="suffix-input"><input id="f-grace" type="number" min="0" max="90" value="2" /><span>days</span></div></div>
+              <div class="field"><label for="f-rate">Interest rate <span>*</span></label><div class="suffix-input"><input id="f-rate" type="number" min="0" max="100" step="0.1" value="0" /><span>%</span></div></div>
+              <div class="field">
+                <label>Rate period</label>
+                <div class="segmented segmented--compact" data-name="rate_period">
+                  <button type="button" class="segmented-opt is-active" data-value="Monthly">Monthly</button><button type="button" class="segmented-opt" data-value="Annual">Annual</button>
+                </div>
+              </div>
+              <div class="field field-wide">
+                <label>Interest type</label>
+                <div class="segmented segmented--compact" data-name="interest_type">
+                  <button type="button" class="segmented-opt is-active" data-value="Simple">Simple interest</button><button type="button" class="segmented-opt" data-value="Compound">Compound interest</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="entry-section entry-section--notes">
+            <div class="section-kicker"><span>03</span><div><strong>Add context</strong><small>Optional notes for future-you.</small></div></div>
+            <div class="field"><label for="f-notes">Notes <small>optional</small></label><textarea id="f-notes" rows="3" maxlength="500" placeholder="What was this for? Add any useful context…"></textarea></div>
+          </div>
+
+          <button type="submit" class="entry-save"><span>Save entry</span><b>↗</b></button>
+        </div>
+
+        <aside class="entry-preview">
+          <div class="preview-top"><span class="preview-label">LIVE PREVIEW</span><span class="preview-pulse"></span></div>
+          <div class="preview-card">
+            <div class="preview-person"><span class="preview-avatar">?</span><div><small>ACCOUNT</small><strong id="entryPreviewName">New person</strong></div></div>
+            <div class="preview-amount" id="entryPreviewAmount">₹0.00</div>
+            <div class="preview-direction" id="entryPreviewDirection">They owe you</div>
+            <div class="preview-divider"></div>
+            <div class="preview-meta"><span>Due</span><strong id="entryPreviewDue">No due date</strong></div>
+            <div class="preview-meta"><span>Interest</span><strong id="entryPreviewRate">0% / month</strong></div>
+            <div class="preview-interest" id="interestPreview">
+              <div class="ip-row"><span>Principal Amount</span><strong id="ipPrincipal">₹0.00</strong></div>
+              <div class="ip-row"><span>Interest %</span><strong id="ipRate">0% / month</strong></div>
+              <div class="ip-row"><span>Duration to due date</span><strong id="ipDuration">Set a due date</strong></div>
+              <div class="ip-row"><span>Interest Amount</span><strong id="ipInterest">₹0.00</strong></div>
+              <div class="ip-row ip-total"><span>Total Amount to Receive</span><strong id="ipTotal">₹0.00</strong></div>
+            </div>
+          </div>
+          <div class="preview-tip"><span>✦</span><div><strong>Tip</strong><p>Add a due date to unlock automatic reminders and grace-period tracking.</p></div></div>
+        </aside>
+      </form>
+    </section>
+
+    <!-- ============ LEDGER & SETTLEMENTS ============ -->
+    <section class="view" id="view-ledger">
+      <div class="view-head"><h1>Ledger &amp; settlements</h1><p class="view-sub">Grouped by person, with the full interest breakdown for each account.</p></div>
+
+      <div class="filter-row">
+        <div class="field field-inline">
+          <label for="ledgerStatusFilter">Status</label>
+          <select id="ledgerStatusFilter">
+            <option value="Active" selected>Active</option>
+            <option value="Settled">Settled</option>
+            <option value="All">All</option>
+          </select>
+        </div>
+        <div class="field field-inline">
+          <label for="ledgerDueFilter">Due</label>
+          <select id="ledgerDueFilter">
+            <option value="All" selected>All</option>
+            <option value="overdue">🔴 Overdue</option>
+            <option value="grace_period">🟠 Grace period</option>
+            <option value="due_today">🟡 Due today</option>
+            <option value="upcoming">🔵 Upcoming</option>
+          </select>
+        </div>
+        <div class="field field-inline">
+          <label for="ledgerPersonFilter">Person</label>
+          <select id="ledgerPersonFilter"><option value="All" selected>All</option></select>
+        </div>
+      </div>
+
+      <div id="ledgerList"></div>
+      <p class="empty-state hidden" id="ledgerEmpty">No records match these filters.</p>
+    </section>
+
+    <!-- ============ INTEREST CALCULATOR ============ -->
+    <section class="view" id="view-calculator">
+      <div class="view-head"><h1>Interest Calculator</h1><p class="view-sub">A what-if tool — nothing here is saved to your ledger.</p></div>
+
+      <div class="calc-layout">
+        <form class="card form-grid" id="calcForm">
+          <div class="field"><label for="c-amount">Amount (₹)</label><input id="c-amount" type="number" min="0.01" step="0.01" value="10000" required /></div>
+          <div class="field"><label for="c-rate">Interest rate (%)</label><input id="c-rate" type="number" min="0" max="100" step="0.1" value="2" required /></div>
+          <div class="field">
+            <label>Rate period</label>
+            <div class="segmented" data-name="c_rate_period">
+              <button type="button" class="segmented-opt is-active" data-value="Monthly">Monthly</button>
+              <button type="button" class="segmented-opt" data-value="Annual">Annual</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Interest type</label>
+            <div class="segmented" data-name="c_interest_type">
+              <button type="button" class="segmented-opt is-active" data-value="Simple">Simple</button>
+              <button type="button" class="segmented-opt" data-value="Compound">Compound</button>
+            </div>
+          </div>
+          <div class="field"><label for="c-loan-date">Loan date</label><input id="c-loan-date" type="date" required /></div>
+          <div class="field"><label for="c-due-date">Due date</label><input id="c-due-date" type="date" required /></div>
+          <div class="field"><label for="c-grace">Grace period (days)</label><input id="c-grace" type="number" min="0" max="90" value="2" required /></div>
+          <div class="field"><label for="c-payment-date">Payment date</label><input id="c-payment-date" type="date" required /></div>
+        </form>
+
+        <div class="card calc-result" id="calcResult">
+          <h2>Result</h2>
+          <div class="ip-row"><span>Phase</span><strong id="crPhase">—</strong></div>
+          <div class="ip-row"><span>Principal</span><strong id="crPrincipal">₹0.00</strong></div>
+          <div class="ip-row"><span>Days elapsed (loan → payment)</span><strong id="crDays">0</strong></div>
+          <div class="ip-row"><span>Interest</span><strong id="crInterest">₹0.00</strong></div>
+          <div class="ip-row"><span>Days overdue (past grace)</span><strong id="crOverdue">0</strong></div>
+          <div class="ip-row ip-total"><span>Total payable</span><strong id="crTotal">₹0.00</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ REPORTS ============ -->
+    <section class="view" id="view-reports">
+      <div class="view-head"><h1>Reports</h1><p class="view-sub">Monthly summary of your ledger activity.</p></div>
+      <div class="chart-wrap" style="margin-bottom:24px;"><canvas id="chartMonthly"></canvas></div>
+      <div class="table-wrap card">
+        <table>
+          <thead><tr><th>Month</th><th>Given</th><th>Taken</th><th>Repayments</th><th>Interest earned</th><th>Interest paid</th></tr></thead>
+          <tbody id="reportsBody"></tbody>
+        </table>
+      </div>
+      <p class="empty-state hidden" id="reportsEmpty">Nothing to report yet.</p>
+    </section>
+
+    <!-- ============ ALL RECORDS ============ -->
+    <section class="view" id="view-records">
+      <div class="view-head"><h1>All records</h1><p class="view-sub">Every transaction, searchable and exportable.</p></div>
+
+      <div class="filter-row">
+        <div class="field field-inline field-grow"><label for="recordsSearch">Search by name</label><input id="recordsSearch" type="search" placeholder="e.g. Ravi" /></div>
+        <div class="field field-inline">
+          <label for="recordsTypeFilter">Type</label>
+          <select id="recordsTypeFilter"><option value="All" selected>All</option><option value="Given">Given</option><option value="Taken">Taken</option></select>
+        </div>
+        <div class="field field-inline">
+          <label for="recordsStatusFilter">Status</label>
+          <select id="recordsStatusFilter"><option value="All" selected>All</option><option value="Active">Active</option><option value="Settled">Settled</option></select>
+        </div>
+        <div class="field field-inline field-end"><label>&nbsp;</label><button class="btn btn-ghost" id="exportCsvBtn">Export CSV</button></div>
+      </div>
+
+      <div class="table-wrap card">
+        <table>
+          <thead>
+            <tr><th>Person</th><th>Type</th><th>Date</th><th>Due</th><th>Principal</th><th>Rate</th><th>Interest</th><th>Total due</th><th>Repaid</th><th>Balance</th><th>Status</th></tr>
+          </thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+      <p class="empty-state hidden" id="recordsEmpty">No transactions yet.</p>
+
+      <div class="card delete-panel" id="deletePanel">
+        <h2>Delete a record</h2>
+        <div class="filter-row"><div class="field field-inline field-grow"><label for="deleteSelect">Select a transaction</label><select id="deleteSelect"></select></div></div>
+        <label class="checkbox-row"><input type="checkbox" id="deleteConfirm" /> I understand this permanently deletes this record and its repayments.</label>
+        <button class="btn btn-danger" id="deleteBtn" disabled>Delete transaction</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Receipt (hidden except when printing) -->
+<div id="receiptView" class="receipt hidden">
+  <div class="receipt-header">
+    <div class="receipt-brand">LEDGERLY</div>
+    <div class="receipt-title">PAYMENT RECEIPT</div>
+  </div>
+  <div class="receipt-row"><span>Receipt #</span><strong id="rcNumber"></strong></div>
+  <div class="receipt-row"><span>Date</span><strong id="rcDate"></strong></div>
+  <div class="receipt-row"><span>Received From / Paid To</span><strong id="rcPerson"></strong></div>
+  <hr />
+  <div class="receipt-row"><span>Original Amount</span><strong id="rcPrincipal"></strong></div>
+  <div class="receipt-row"><span>Interest</span><strong id="rcInterest"></strong></div>
+  <div class="receipt-row"><span>Payment</span><strong id="rcPayment"></strong></div>
+  <hr />
+  <div class="receipt-row receipt-total"><span>Remaining Balance</span><strong id="rcRemaining"></strong></div>
+  <p class="receipt-footer">Generated by Ledgerly — Personal Credit Ledger</p>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item is-active" data-view="dashboard">🏠<span>Home</span></button>
+  <button class="bottom-nav-item" data-view="people">👥<span>People</span></button>
+  <button class="bottom-nav-item bottom-nav-item--add" data-view="add">➕</button>
+  <button class="bottom-nav-item" data-view="ledger">📒<span>Ledger</span></button>
+  <button class="bottom-nav-item" data-action="more">⋯<span>More</span></button>
+</nav>
+
+<script src="app.js?v=3"></script>
+</body>
+</html>
